@@ -1478,7 +1478,7 @@ const channel = realtime.channels.get("location-ch");
 realtime.channels.get("location-ch").subscribe((event) => {
 var d = new Date();
 if (notifications) {
-new Notification("Racket", { body:`${event.data.split(" >> ")[1]} in ${event.data.split(" >> ")[0]}\n${event.data.split(" >> ")[2]}` })
+new Notification("Racket", { body:`${event.data.split(" >> ")[1].split(" - ")[0]} in ${event.data.split(" >> ")[0]}\n${event.data.split(" >> ")[1].split(" - ")[1]}` })
 }
 var obj = {};
 if (d.getHours() > 12) {
