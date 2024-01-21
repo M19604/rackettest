@@ -1602,7 +1602,7 @@ return profileColor;
 colorFound = true;
 return serverData[z]["PROFILECOLORS"].split(" - ")[1];
 }
-if (z === serverData.length - 1 && !colorFound) {
+if (z === 0 && !colorFound) {
 var colors = ["tomato", "orange", "mediumseagreen", "dodgerBlue", "violet"];
 return colors[Math.floor(Math.random() * colors.length)];
 }
@@ -1693,7 +1693,7 @@ return profileColor;
 colorFound = true;
 return serverData[z]["PROFILECOLORS"].split(" - ")[1];
 }
-if (z === serverData.length - 1 && !colorFound) {
+if (z === 0 && !colorFound) {
 var colors = ["tomato", "orange", "mediumseagreen", "dodgerBlue", "violet"];
 return colors[Math.floor(Math.random() * colors.length)];
 }
@@ -2411,7 +2411,8 @@ icon.textContent = messageData.split(" - ")[0][0];
 }
 if (profileColor === "") {
 var colors = ["tomato", "orange", "mediumseagreen", "dodgerBlue", "violet"];
-icon.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+profileColor = colors[Math.floor(Math.random() * colors.length)];
+icon.style.backgroundColor = profileColor;
 }
 function getProfileColor() {
 var colorFound = false;
@@ -2422,7 +2423,7 @@ return profileColor;
 colorFound = true;
 return serverData[z]["PROFILECOLORS"].split(" - ")[1];
 }
-if (z === serverData.length - 1 && !colorFound) {
+if (z === 0 && !colorFound) {
 var colors = ["tomato", "orange", "mediumseagreen", "dodgerBlue", "violet"];
 return colors[Math.floor(Math.random() * colors.length)];
 }
