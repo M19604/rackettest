@@ -110,12 +110,12 @@
 <div class="container">
 <div class="title" style="top: 3%;">Choose Server Icon Color</div>
 <div id="range" class="serverColorRange">
-<div id="rangeDot"></div>
+<div id="rangeDot" class="serverColorRangeDot"></div>
 </div>
 </div>
 <div class="container">
 <div class="title" style="top: 3%;">Choose Profile Icon Color</div>
-<div id="range">
+<div id="range" class="profileColorRange">
 <div id="rangeDot"></div>
 </div>
 </div>
@@ -1465,7 +1465,8 @@ var input = document.getElementById("message");
 var serverData = null;
 const key = "f-2P0w.ETPdKQ:iFCWp8Xob5TEW81vorEyYQpLuaWlkH21gSmJ0N6ngZk";
 const realtime = new Ably.Realtime(key);
-var notifications = false;
+var notifications = localStorage.getItem("notificationSave");
+var profileColor = "";
 form.addEventListener("submit", e => {
 e.preventDefault();
 })
@@ -1477,7 +1478,7 @@ const channel = realtime.channels.get("location-ch");
 }
 realtime.channels.get("location-ch").subscribe((event) => {
 var d = new Date();
-if (notifications) {
+if (notifications === "true") {
 for (let i = 0; i < document.getElementsByClassName("server").length; i++) {
 if (document.getElementsByClassName("server")[i].name === event.data.split(" >> ")[0]) {
 new Notification(`Racket - ${event.data.split(" >> ")[0]}`, { body:`${event.data.split(" >> ")[1].split(" - ")[0]}: ${event.data.split(" >> ")[1].split(" - ")[1]}` })
@@ -1503,9 +1504,6 @@ var username = document.createElement("a");
 username.id = "username";
 var text = document.createElement("a");
 text.id = "messageText";
-if (event.data.split(" - ")[1].toLowerCase().includes("merry christmas")) {
-text.className = "christmasMessage";
-}
 var timestamp = document.createElement("div");
 timestamp.id = "timestamp";
 if (d.getHours() > 12) {
@@ -1519,8 +1517,7 @@ icon.textContent = event.data.split(" - ")[0].split(" >> ")[1].split(" ")[0][0] 
 } else {
 icon.textContent = event.data.split(" - ")[0].split(" >> ")[1][0];
 }
-var colors = ["tomato", "orange", "mediumseagreen", "dodgerBlue", "violet"];
-icon.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+icon.style.backgroundColor = profileColor;
 text.textContent = event.data.split(" - ")[1];
 document.getElementById("chat").appendChild(ele);
 ele.appendChild(header);
@@ -1765,7 +1762,8 @@ document.getElementById("selected").style.left = "48.5%";
 document.getElementById("selected").style.right = ".5vw";
 e.target.classList.add("active");
 document.getElementById("darkOption").classList.remove("active");
-notifications = true;
+notifications = "true";
+localStorage.setItem("notificationSave", "true");
 if (Notification.permission !== "granted") {
 Notification.requestPermission().then(function(permission) {
 if (permission !== "granted") {
@@ -1773,7 +1771,8 @@ document.getElementById("selected").style.right = "0";
 document.getElementById("selected").style.left = ".5vw";
 e.target.classList.add("active");
 document.getElementById("lightOption").classList.remove("active");
-notifications = false;
+notifications = "false";
+localStorage.setItem("notificationSave", "false");
 }
 })
 }
@@ -1783,11 +1782,15 @@ document.getElementById("selected").style.right = "0";
 document.getElementById("selected").style.left = ".5vw";
 e.target.classList.add("active");
 document.getElementById("lightOption").classList.remove("active");
-notifications = false;
+notifications = "false";
+localStorage.setItem("notificationSave", "false");
 }
 if (e.target.id === "range") {
 e.target.children[0].style.left = (e.x-e.target.getBoundingClientRect().left)-((3/100*window.innerWidth)/4);
 e.target.children[0].style.backgroundColor = `hsl(${(e.x-e.target.getBoundingClientRect().left)/2}, 89%, 66%)`;
+}
+if (e.target.className === "profileColorRange") {
+profileColor = `hsl(${(e.x-e.target.getBoundingClientRect().left)/2}, 89%, 66%)`;
 }
 if (e.target.className === "serverColorRange") {
 for (let i = 0; i < document.getElementsByClassName("server").length; i++) {
@@ -2006,6 +2009,11 @@ updateData();
 function loadData(username) {
 var dates = [];
 setTimeout(function() {
+for (let b = 0; b < serverData.length; b++) {
+if (serverData[b]["PROFILECOLORS"].split(" - ")[0] === username) {
+profileColor = serverData[b]["PROFILECOLORS"].split(" - ")[1];
+}
+}
 document.getElementById("logAccount").value = username;
 var logScript = "https://script.google.com/macros/s/AKfycbzPrJr3c1eP49jdq4x9URPn8XuLCRTJUNE2LPJ083a2tqfWO7HpPau5VksBn22tELaK/exec";
 fetch(logScript, {method: "POST", body: new FormData(document.getElementById("logForm"))});
@@ -2172,7 +2180,7 @@ var user = serverData[i]["SERVERLIST"];
 serverEle.name = user;
 serverEle.textContent = serverData[i]["SERVERLIST"][0];
 serverEle.className = "server";
-serverEle.className = localStorage.getItem("serverColorSave");
+serverEle.style.backgroundColor = localStorage.getItem("serverColorSave");
 document.getElementsByClassName("sidebar")[0].appendChild(serverEle);
 document.getElementsByClassName("sidebar")[0].appendChild(document.getElementsByClassName("addServer")[0]);
 }
@@ -2198,6 +2206,7 @@ var serverEle = document.createElement("div");
 serverEle.name = user;
 serverEle.textContent = serverData[i]["USER - " + username.trim()][0];
 serverEle.className = "server";
+serverEle.style.backgroundColor = localStorage.getItem("serverColorSave");
 document.getElementsByClassName("sidebar")[0].appendChild(serverEle);
 document.getElementsByClassName("sidebar")[0].appendChild(document.getElementsByClassName("addServer")[0]);
 }
@@ -2407,6 +2416,18 @@ ele.classList.remove("toggled");
 }
 if (localStorage.getItem("serverColorSave") === null) {
 localStorage.setItem("serverColorSave", "#bb86fc");
+} else {
+document.getElementsByClassName("serverColorRangeDot")[0].style.left = ((parseInt(localStorage.getItem("serverColorSave").split("(")[1].split(",")[0])/360*100)/100*360)*2;
+document.getElementsByClassName("serverColorRangeDot")[0].style.backgroundColor = localStorage.getItem("serverColorSave");
+}
+if (localStorage.getItem("notificationSave") === null) {
+localStorage.setItem("notificationSave", false);
+}
+if (localStorage.getItem("notificationSave") === "true") {
+document.getElementById("selected").style.left = "48.5%";
+document.getElementById("selected").style.right = ".5vw";
+document.getElementById("lightOption").classList.add("active");
+document.getElementById("darkOption").classList.remove("active");
 }
 </script>
 <!-- MADE BY LUKE SKUTT, 2023 -->                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
