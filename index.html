@@ -2430,6 +2430,10 @@ return colors[Math.floor(Math.random() * colors.length)];
 }
 }
 icon.style.backgroundColor = getProfileColor();
+if (icon.style.backgroundColor === "") {
+var colors = ["tomato", "orange", "mediumseagreen", "dodgerBlue", "violet"];
+icon.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+}
 text.textContent = messageData.split(" - ")[1];
 document.getElementById("chat").appendChild(ele);
 ele.appendChild(header);
