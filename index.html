@@ -102,6 +102,7 @@
 </div>
 <div class="settingsOptions">
 <div class="option settingsOptionActive">Appearance</div>
+<div class="option">Change Log</div>
 <div class="option">Report a Bug</div>
 <div id="signoutBTN">Log Out</div>
 </div>
@@ -116,12 +117,16 @@
 <div class="container">
 <div class="title" style="top: 3%;">Choose Profile Icon Color</div>
 <div id="range" class="profileColorRange">
-<div id="rangeDot"></div>
+<div id="rangeDot" class="profileColorRangeDot"></div>
+<form id="profileColorForm">
+<input name="username" id="profileColorUsername" hidden>
+<input name="profileColor" id="profileColorColor" hidden>
+</form>
 </div>
 </div>
 <div class="container">
 <div class="title">Enable 2023 Christmas Theme</div>
-<div id="switch" onclick="toggleSwitch(this)">
+<div id="switch" onclick="toggleSwitch(this)" class="christmasToggle">
 <div id="toggle"></div>
 </div>
 </div>
@@ -129,10 +134,16 @@
 <div id="ReportaBugContainer" class="pageContainer">
 <form id="bugForm">
 <div class="bugInputContainer">
-<textarea id="bugInput" placeholder="Type here..."></textarea>
+<input id="bugUsername" name="username" hidden>
+<textarea id="bugInput" name="report" placeholder="Type here..."></textarea>
 <div id="bugReportBTN">Send</div>
 </div>
 </form>
+</div>
+<div id="ChangeLogContainer" class="pageContainer">
+<div class="changeContainer">
+<div class="title">01/21/24</div>
+<div class="desc">Added settings, notifications, toggeable Christmas theme, custom profile colors, and custom server colors!</div>
 </div>
 </div>
 </div>
@@ -1321,6 +1332,40 @@ height: 100%;
 display: none;
 }
 
+#settingsPage #settingsContainer #ChangeLogContainer .changeContainer {
+width: 100%;
+height: 20%;
+position: relative;
+border-bottom: .15vw solid #444;
+}
+
+#settingsPage #settingsContainer #ChangeLogContainer .changeContainer:last-child {
+border: none;
+}
+
+#settingsPage #settingsContainer #ChangeLogContainer .changeContainer .title {
+color: #fff;
+font-weight: bold;
+position: absolute;
+top: 0;
+right: 0;
+height: 30%;
+width: 95%;
+font-size: 1.5vw;
+}
+
+#settingsPage #settingsContainer #ChangeLogContainer .changeContainer .desc {
+color: #c1c1c1;
+position: absolute;
+bottom: 0;
+height: 80%;
+width: 90%;
+left: 5%;
+font-size: 1.25vw;
+display: flex;
+align-items: center;
+}
+
 #settingsPage #settingsContainer .container {
 width: 100%;
 height: 20%;
@@ -1456,6 +1501,37 @@ transition: .5s;
 #settingsPage #settingsContainer .bugInputContainer #bugReportBTN:hover {
 filter: brightness(125%);
 }
+
+#settingsPage #settingsContainer .bugInputContainer #bugReportBTN.disabled {
+filter: brightness(75%);
+}
+
+.snowflake {
+width: 1vw;
+height: 1vw;
+border-radius: 50%;
+position: absolute;
+animation: snowfall linear infinite;
+z-index: 100;
+}
+
+@keyframes snowfall {
+0% {
+top: -2vw;
+}
+100% {
+top: 100%;
+}
+}
+
+.christmasMessage {
+font-family: sans-serif;
+background: linear-gradient(to right, tomato, mediumseagreen);
+-webkit-text-fill-color: transparent; 
+background-clip: text;
+-webkit-background-clip: text;
+font-weight: bold;
+}
 </style>
 <script>
 var loaded = false;
@@ -1480,7 +1556,7 @@ realtime.channels.get("location-ch").subscribe((event) => {
 var d = new Date();
 if (notifications === "true") {
 for (let i = 0; i < document.getElementsByClassName("server").length; i++) {
-if (document.getElementsByClassName("server")[i].name === event.data.split(" >> ")[0]) {
+if (document.getElementsByClassName("server")[i].name === event.data.split(" >> ")[0] && document.getElementById("chatUsername").value !== event.data.split(" >> ")[1].split(" - ")[0]) {
 new Notification(`Racket - ${event.data.split(" >> ")[0]}`, { body:`${event.data.split(" >> ")[1].split(" - ")[0]}: ${event.data.split(" >> ")[1].split(" - ")[1]}` })
 }
 }
@@ -1517,8 +1593,26 @@ icon.textContent = event.data.split(" - ")[0].split(" >> ")[1].split(" ")[0][0] 
 } else {
 icon.textContent = event.data.split(" - ")[0].split(" >> ")[1][0];
 }
-icon.style.backgroundColor = profileColor;
+function getProfileColor() {
+var colorFound = false;
+for (let z = serverData.length - 1; z > 0; z--) {
+if (event.data.split(" >> ")[1].split(" - ")[0] === document.getElementById("chatUsername").value) {
+return profileColor;
+} else if (serverData[z]["PROFILECOLORS"] !== undefined && serverData[z]["PROFILECOLORS"].split(" - ")[0] === event.data.split(" >> ")[1].split(" - ")[0]) {
+colorFound = true;
+return serverData[z]["PROFILECOLORS"].split(" - ")[1];
+}
+if (z === serverData.length - 1 && !colorFound) {
+var colors = ["tomato", "orange", "mediumseagreen", "dodgerBlue", "violet"];
+return colors[Math.floor(Math.random() * colors.length)];
+}
+}
+}
+icon.style.backgroundColor = getProfileColor();
 text.textContent = event.data.split(" - ")[1];
+if (text.textContent.toLowerCase().includes("merry christmas")) {
+text.classList.add("christmasMessage");
+}
 document.getElementById("chat").appendChild(ele);
 ele.appendChild(header);
 header.appendChild(icon);
@@ -1590,8 +1684,22 @@ icon.textContent = messageData.split(" - ")[0].split(" ")[0][0] + messageData.sp
 } else {
 icon.textContent = messageData.split(" - ")[0][0];
 }
+function getProfileColor() {
+var colorFound = false;
+for (let z = serverData.length - 1; z > 0; z--) {
+if (messageData.split(" - ")[0] === document.getElementById("chatUsername").value) {
+return profileColor;
+} else if (serverData[z]["PROFILECOLORS"].split(" - ")[0] === messageData.split(" - ")[0]) {
+colorFound = true;
+return serverData[z]["PROFILECOLORS"].split(" - ")[1];
+}
+if (z === serverData.length - 1 && !colorFound) {
 var colors = ["tomato", "orange", "mediumseagreen", "dodgerBlue", "violet"];
-icon.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+return colors[Math.floor(Math.random() * colors.length)];
+}
+}
+}
+icon.style.backgroundColor = getProfileColor();
 text.textContent = messageData.split(" - ")[1];
 document.getElementById("chat").appendChild(ele);
 ele.appendChild(header);
@@ -1791,6 +1899,9 @@ e.target.children[0].style.backgroundColor = `hsl(${(e.x-e.target.getBoundingCli
 }
 if (e.target.className === "profileColorRange") {
 profileColor = `hsl(${(e.x-e.target.getBoundingClientRect().left)/2}, 89%, 66%)`;
+document.getElementById("profileColorColor").value = profileColor;
+var scriptURL = "https://script.google.com/macros/s/AKfycbwhwuYRxWA5peUhHhVZc5j7UBtGyr_BH4fbAtFFmiscSmUNGyw2jP4_gIp9vxQxDsPlZg/exec";
+fetch(scriptURL, {method: "POST", body: new FormData(document.getElementById("profileColorForm"))});
 }
 if (e.target.className === "serverColorRange") {
 for (let i = 0; i < document.getElementsByClassName("server").length; i++) {
@@ -1815,6 +1926,53 @@ document.getElementById("settingsContainer").style.translate = "0";
 document.getElementById("settingsContainer").style.opacity = 1;
 }, 100)
 }, 500)
+}
+if (e.target.id === "bugReportBTN" && e.target.className !== "disabled") {
+e.target.classList.add("disabled");
+setTimeout(function() {
+e.target.classList.remove("disabled");
+}, 15000)
+var scriptURL = "https://script.google.com/macros/s/AKfycbxd6icO3YmgWvBZoTft7vOnWWjneBeVLwPJNiN67zAEdsHv2m1Puac3ntiHz2kSjBzLDw/exec";
+fetch(scriptURL, {method: "POST", body: new FormData(document.getElementById("bugForm"))});
+document.getElementById("bugInput").value = "";
+}
+if (e.target.classList.contains("christmasToggle")) {
+if (e.target.classList.contains("toggled")) {
+localStorage.setItem("christmasToggleSave", "true");
+document.getElementById("chat").style.backgroundImage = "radial-gradient(#123, #292929)";
+document.getElementById("dmChat").style.backgroundImage = "radial-gradient(#123, #292929)";
+for (let z = 0; z < 50; z++) {
+var snowflake = document.createElement("div");
+snowflake.className = "snowflake";
+var colors = ["#fff", "#b9b9b9", "#e1e1e1", "#d8d8d8"];
+snowflake.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+snowflake.style.transform = `scale(${(Math.floor(Math.random() * 100)/100)})`;
+snowflake.style.right = Math.floor(Math.random() * 92) + "%";
+snowflake.style.filter = `blur(${Math.floor(Math.random() * 2) + .5}vw)`;
+snowflake.style.animationDuration = Math.floor(Math.random() * 20) + 5 + "s";
+document.body.appendChild(snowflake);
+}
+} else {
+localStorage.setItem("christmasToggleSave", "false");
+var snowflakeInterval = setInterval(function() {
+if (document.getElementsByClassName("snowflake")[0]) {
+document.getElementsByClassName("snowflake")[0].remove();
+} else {
+clearInterval(snowflakeInterval);
+}
+})
+var christmasMessageInterval = setInterval(function() {
+if (document.getElementsByClassName("christmasMessage")[0]) {
+document.getElementsByClassName("christmasMessage")[0].classList.remove("christmasMessage");
+} else {
+clearInterval(christmasMessageInterval);
+}
+})
+document.getElementById("chat").style.backgroundColor = "#292929";
+document.getElementById("dmChat").style.backgroundColor = "#292929";
+document.getElementById("chat").style.backgroundImage = "";
+document.getElementById("dmChat").style.backgroundImage = "";
+}
 }
 })  
 function openSignup() {
@@ -2012,15 +2170,19 @@ setTimeout(function() {
 for (let b = 0; b < serverData.length; b++) {
 if (serverData[b]["PROFILECOLORS"].split(" - ")[0] === username) {
 profileColor = serverData[b]["PROFILECOLORS"].split(" - ")[1];
+document.getElementsByClassName("profileColorRangeDot")[0].style.left = ((parseInt(profileColor.split(",")[0].split("(")[1])/360*100)/100*360)*2;
+document.getElementsByClassName("profileColorRangeDot")[0].style.backgroundColor = profileColor;
 }
 }
 document.getElementById("logAccount").value = username;
 var logScript = "https://script.google.com/macros/s/AKfycbzPrJr3c1eP49jdq4x9URPn8XuLCRTJUNE2LPJ083a2tqfWO7HpPau5VksBn22tELaK/exec";
 fetch(logScript, {method: "POST", body: new FormData(document.getElementById("logForm"))});
 document.getElementById("chatUsername").value = username;
+document.getElementById("profileColorUsername").value = username;
 document.getElementById("serverUsername").value = username;
 document.getElementById("joinServerUsername").value = username;
 document.getElementById("dmUsername").value = username;
+document.getElementById("bugUsername").value = username;
 var count = 0;
 var newMessages = [];
 for (let a = 0; a < serverData.length; a++) {
@@ -2238,9 +2400,6 @@ var usernameEle = document.createElement("a");
 usernameEle.id = "username";
 var text = document.createElement("a");
 text.id = "messageText";
-if (messageData.split(" - ")[1].toLowerCase().includes("merry christmas")) {
-text.className = "christmasMessage";
-}
 var timestamp = document.createElement("div");
 timestamp.id = "timestamp";
 timestamp.textContent = serverData[i]["TIMESTAMP"];
@@ -2250,8 +2409,26 @@ icon.textContent = messageData.split(" - ")[0].split(" ")[0][0] + messageData.sp
 } else {
 icon.textContent = messageData.split(" - ")[0][0];
 }
+if (profileColor === "") {
 var colors = ["tomato", "orange", "mediumseagreen", "dodgerBlue", "violet"];
 icon.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+}
+function getProfileColor() {
+var colorFound = false;
+for (let z = serverData.length - 1; z > 0; z--) {
+if (messageData.split(" - ")[0] === document.getElementById("chatUsername").value) {
+return profileColor;
+} else if (serverData[z]["PROFILECOLORS"].split(" - ")[0] === messageData.split(" - ")[0]) {
+colorFound = true;
+return serverData[z]["PROFILECOLORS"].split(" - ")[1];
+}
+if (z === serverData.length - 1 && !colorFound) {
+var colors = ["tomato", "orange", "mediumseagreen", "dodgerBlue", "violet"];
+return colors[Math.floor(Math.random() * colors.length)];
+}
+}
+}
+icon.style.backgroundColor = getProfileColor();
 text.textContent = messageData.split(" - ")[1];
 document.getElementById("chat").appendChild(ele);
 ele.appendChild(header);
@@ -2428,6 +2605,28 @@ document.getElementById("selected").style.left = "48.5%";
 document.getElementById("selected").style.right = ".5vw";
 document.getElementById("lightOption").classList.add("active");
 document.getElementById("darkOption").classList.remove("active");
+}
+if (localStorage.getItem("christmasToggleSave") === null) {
+localStorage.setItem("christmasToggleSave", "false");
+} else if (localStorage.getItem("christmasToggleSave") === "true") {
+document.getElementById("chat").style.backgroundImage = "radial-gradient(#123, #292929)";
+document.getElementById("dmChat").style.backgroundImage = "radial-gradient(#123, #292929)";
+for (let z = 0; z < 50; z++) {
+var snowflake = document.createElement("div");
+snowflake.className = "snowflake";
+var colors = ["#fff", "#b9b9b9", "#e1e1e1", "#d8d8d8"];
+snowflake.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+snowflake.style.transform = `scale(${(Math.floor(Math.random() * 100)/100)})`;
+snowflake.style.right = Math.floor(Math.random() * 92) + "%";
+snowflake.style.filter = `blur(${Math.floor(Math.random() * 2) + .5}vw)`;
+snowflake.style.animationDuration = Math.floor(Math.random() * 20) + 5 + "s";
+document.body.appendChild(snowflake);
+}
+document.getElementsByClassName("christmasToggle")[0].classList.add("toggled");
+document.getElementsByClassName("christmasToggle")[0].children[0].style.backgroundColor = "#9f6edb";
+document.getElementsByClassName("christmasToggle")[0].style.backgroundColor = "#bb86fc";
+document.getElementsByClassName("christmasToggle")[0].children[0].style.boxShadow = "0 0 .5vw #9f6edb";
+document.getElementsByClassName("christmasToggle")[0].children[0].style.left = "57%";
 }
 </script>
 <!-- MADE BY LUKE SKUTT, 2023 -->                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
