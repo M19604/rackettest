@@ -2058,7 +2058,7 @@ document.getElementById("signupPassword").value = "";
 } else {
 var signupForm = document.getElementById("signupForm");
 var scriptURL = "https://script.google.com/macros/s/AKfycbz9cYHq-AGvYjduCyvK5miIUF7NeE-RcVEGrFk-uUxtYvhwuS4bKXBWWwCe_ulIaiz2Yw/exec";
-if (document.getElementById("signupUsername").value.trim() !== "" && document.getElementById("signupPassword").value.trim() !== "" && !document.getElementById("signupUsername").value.includes("-") && document.getElementById("signupUsername") !== "SERVERLIST" && document.getElementById("signupUsername") !== "SERVERCODES" && document.getElementById("signupUsername") !== "USERNAMES" && document.getElementById("signupUsername") !== "PASSWORDS" && document.getElementById("signupUsername") !== "VERIFIEDSUPPORTERS") {
+if (document.getElementById("signupUsername").value.trim() !== "" && document.getElementById("signupPassword").value.trim() !== "" && !document.getElementById("signupUsername").value.includes("-") && document.getElementById("signupUsername").value.trim() !== "SERVERLIST" && document.getElementById("signupUsername").value.trim() !== "SERVERCODES" && document.getElementById("signupUsername").value.trim() !== "USERNAMES" && document.getElementById("signupUsername").value.trim() !== "PASSWORDS" && document.getElementById("signupUsername").value !== "VERIFIEDSUPPORTERS" && document.getElementById("signupUsername").value.trim() !== "PROFILECOLORS") {
 fetch(scriptURL, {method:"POST", body: new FormData(signupForm)});
 localStorage.setItem("username", document.getElementById("signupUsername").value.trim());
 localStorage.setItem("password", document.getElementById("signupPassword").value)
