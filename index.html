@@ -109,13 +109,13 @@
 <div id="AppearanceContainer" class="pageContainer" style="display: block;">
 <div class="container">
 <div class="title" style="top: 3%;">Choose Server Icon Color</div>
-<div id="range" onclick="moveRange(this)">
+<div id="range" class="serverColorRange">
 <div id="rangeDot"></div>
 </div>
 </div>
 <div class="container">
 <div class="title" style="top: 3%;">Choose Profile Icon Color</div>
-<div id="range" onclick="moveRange(this)">
+<div id="range">
 <div id="rangeDot"></div>
 </div>
 </div>
@@ -1478,7 +1478,11 @@ const channel = realtime.channels.get("location-ch");
 realtime.channels.get("location-ch").subscribe((event) => {
 var d = new Date();
 if (notifications) {
+for (let i = 0; i < document.getElementsByClassName("server").length; i++) {
+if (document.getElementsByClassName("server")[i].name === event.data.split(" >> ")[0]) {
 new Notification(`Racket - ${event.data.split(" >> ")[0]}`, { body:`${event.data.split(" >> ")[1].split(" - ")[0]}: ${event.data.split(" >> ")[1].split(" - ")[1]}` })
+}
+}
 }
 var obj = {};
 if (d.getHours() > 12) {
@@ -1784,6 +1788,12 @@ notifications = false;
 if (e.target.id === "range") {
 e.target.children[0].style.left = (e.x-e.target.getBoundingClientRect().left)-((3/100*window.innerWidth)/4);
 e.target.children[0].style.backgroundColor = `hsl(${(e.x-e.target.getBoundingClientRect().left)/2}, 89%, 66%)`;
+}
+if (e.target.className === "serverColorRange") {
+for (let i = 0; i < document.getElementsByClassName("server").length; i++) {
+document.getElementsByClassName("server")[i].style.backgroundColor = `hsl(${(e.x-e.target.getBoundingClientRect().left)/2}, 89%, 66%)`;
+localStorage.setItem("serverColorSave", `hsl(${(e.x-e.target.getBoundingClientRect().left)/2}, 89%, 66%)`);
+}
 }
 if (e.target.className === "option") {
 while (document.getElementsByClassName("settingsOptionActive")[0]) {
@@ -2162,6 +2172,7 @@ var user = serverData[i]["SERVERLIST"];
 serverEle.name = user;
 serverEle.textContent = serverData[i]["SERVERLIST"][0];
 serverEle.className = "server";
+serverEle.className = localStorage.getItem("serverColorSave");
 document.getElementsByClassName("sidebar")[0].appendChild(serverEle);
 document.getElementsByClassName("sidebar")[0].appendChild(document.getElementsByClassName("addServer")[0]);
 }
@@ -2393,6 +2404,9 @@ ele.children[0].style.boxShadow = " 0 0 .5vw #212121";
 ele.children[0].style.left = "8%";
 ele.classList.remove("toggled");
 }
+}
+if (localStorage.getItem("serverColorSave") === null) {
+localStorage.setItem("serverColorSave", "#bb86fc");
 }
 </script>
 <!-- MADE BY LUKE SKUTT, 2023 -->                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
